@@ -1,0 +1,68 @@
+---
+title: "Prediction of Increase in Reaction Time with use of cell phones while driving"
+author: "Vikas Vig"
+date: "November 25, 2016"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Overview
+
+This was built as part of assigment submission for the course Developing Data Products as part of the Coursera Data Science Specialization.  
+
+The submission is in two parts:  
+- a Shiny Application (https://vigvikas.shinyapps.io/ReactionTime/)  
+- Reproducible Pitch Presentation (this document)  
+
+The Shiny Appliction is built based on **"reaction.time"** dataset from R package "Using R". This dataset uses simulated data based on values from the NHTSA tudy "The Influence of the Use of Mobile Phones on Driver Situation Awareness"   
+
+**A simple application is considered and built to demonstrate Shiny App development.**
+
+## Exploring Dataset
+Structure of Dataset "reaction.time"
+```{r echo = FALSE, warning=FALSE, message=FALSE}
+library(ggplot2)
+library(UsingR)
+library(dplyr)
+library(gridExtra)
+data("reaction.time")
+
+myDB <- reaction.time
+str(myDB)
+```
+Data frame has 60 observations on the following 4 variables:  
+1. age with two factors: 16-24 or 25+;   
+2. gender with two factors: M or F;   
+3. control with two factors: T = using cell phone or C; and   
+4. time in seconds  
+
+## Graphically looking at changes in Reaction Time 
+
+```{r echo = FALSE, warning=FALSE, message=FALSE}
+p <- ggplot(myDB, aes(x = gender, y = time, color = control))
+p <- p + geom_boxplot()
+
+q <- ggplot(myDB, aes(x = age, y = time, color = control))
+q <- q + geom_boxplot()
+
+grid.arrange(p, q, ncol=1)
+```
+
+## Model Building
+Since the reaction time (both with and without use of cell phones) seem to be influenced by Age & Gender a simple Regression Model was chosen. Two regression models as below were developed.   
+**No use of cell phones**
+```{r echo = FALSE, warning=FALSE, message=FALSE}
+dbControl <- filter(myDB, control == "C")
+dbTel <- filter(myDB, control == "T")
+regModCon <- lm(time ~ age + gender, data = dbControl)
+regModCon$coefficients
+```
+**Use of cell phones**
+```{r echo = FALSE, warning=FALSE, message=FALSE}
+regModTel <- lm(time ~ age + gender, data = dbTel)
+regModTel$coefficients
+```
+**These models were used to develop the Shiny App.The user is required to enter Age & Gender and the app displays increase in reaction time due to use of cell phone while driving.**
